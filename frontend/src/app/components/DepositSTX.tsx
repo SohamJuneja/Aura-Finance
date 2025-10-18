@@ -8,7 +8,7 @@ import type { UserSession } from '@stacks/connect';
 
 interface DepositSTXProps {
   userSession: UserSession;
-  onSuccess?: () => void;
+  onSuccess?: (txId: string) => void;
 }
 
 export default function DepositSTX({ userSession, onSuccess }: DepositSTXProps) {
@@ -39,7 +39,7 @@ export default function DepositSTX({ userSession, onSuccess }: DepositSTXProps) 
           alert(`Deposit transaction submitted! TxID: ${data.txId}\n\nWait ~10 minutes for confirmation, then refresh the page.`);
           setAmount('');
           setLoading(false);
-          if (onSuccess) onSuccess();
+          if (onSuccess) onSuccess(data.txId);
         },
         onCancel: () => {
           console.log('[DepositSTX] User canceled transaction');

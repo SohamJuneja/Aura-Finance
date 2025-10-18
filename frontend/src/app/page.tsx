@@ -6,6 +6,7 @@ import ConnectWallet from './components/ConnectWallet';
 import Dashboard from './components/Dashboard';
 import DepositSTX from './components/DepositSTX';
 import MintABTC from './components/MintABTC';
+import TransactionTracker from './components/TransactionTracker';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -13,10 +14,23 @@ const userSession = new UserSession({ appConfig });
 export default function Home() {
   // This state helps us know when the page has loaded in the browser
   const [isClient, setIsClient] = useState(false);
+  const [pendingTxId, setPendingTxId] = useState<string | null>(null);
+  const [dashboardKey, setDashboardKey] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleTransactionSubmitted = (txId: string) => {
+    console.log('[Home] Transaction submitted:', txId);
+    setPendingTxId(txId);
+  };
+
+  const handleTransactionConfirmed = () => {
+    console.log('[Home] Transaction confirmed, refreshing dashboard');
+    setDashboardKey(prev => prev + 1);
+    setPendingTxId(null);
+  };
 
   // We only know if the user is signed in when the client has loaded
   const isConnected = isClient && userSession.isUserSignedIn();
@@ -35,7 +49,7 @@ export default function Home() {
         {isConnected ? (
           <>
             {/* Dashboard showing current balances */}
-            <Dashboard userSession={userSession} />
+            <Dashboard key={dashboardKey} userSession={userSession} />
             
             {/* Transaction Actions */}
             <div className="w-full">
@@ -43,8 +57,14 @@ export default function Home() {
                 Interact with Aura Finance
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-                <DepositSTX userSession={userSession} />
-                <MintABTC userSession={userSession} />
+                <DepositSTX 
+                  userSession={userSession} 
+                  onSuccess={(txId) => handleTransactionSubmitted(txId)}
+                />
+                <MintABTC 
+                  userSession={userSession} 
+                  onSuccess={(txId) => handleTransactionSubmitted(txId)}
+                />
               </div>
             </div>
           </>
@@ -56,6 +76,14 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Transaction Status Tracker */}
+      {pendingTxId && (
+        <TransactionTracker 
+          txId={pendingTxId} 
+          onConfirmed={handleTransactionConfirmed}
+        />
+      )}
     </main>
   );
 }

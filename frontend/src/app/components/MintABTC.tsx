@@ -8,7 +8,7 @@ import type { UserSession } from '@stacks/connect';
 
 interface MintABTCProps {
   userSession: UserSession;
-  onSuccess?: () => void;
+  onSuccess?: (txId: string) => void;
 }
 
 export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
@@ -65,7 +65,7 @@ export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
           alert(`✅ Mint transaction submitted!\n\nTxID: ${data.txId}\n\nImportant: Wait ~10 minutes for blockchain confirmation, then click the "Refresh" button on the dashboard to see your new balances.`);
           setAmount('');
           setLoading(false);
-          if (onSuccess) onSuccess();
+          if (onSuccess) onSuccess(data.txId);
         },
         onCancel: () => {
           console.log('[MintABTC] User canceled transaction');
