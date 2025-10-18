@@ -19,6 +19,7 @@ const userSession = new UserSession({ appConfig });
 export default function ConnectWallet() {
   // Track Stacks user session data when signed in
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
@@ -31,15 +32,37 @@ export default function ConnectWallet() {
   }, []);
 
   const handleConnect = () => {
-    showConnect({
-      userSession,
-      appDetails: {
-        name: 'Aura Finance',
-        icon: `${window.location.origin}/favicon.ico`,
-      },
-      onFinish: () => window.location.reload(),
-      onCancel: () => console.log('User canceled connect'),
-    });
+    try {
+      setConnecting(true);
+      console.log('[ConnectWallet] Opening Stacks connect modal');
+      showConnect({
+        userSession,
+        appDetails: {
+          name: 'Aura Finance',
+          icon: `${window.location.origin}/favicon.ico`,
+        },
+        onFinish: () => {
+          console.log('[ConnectWallet] Connect finished');
+          try {
+            const data = userSession.loadUserData?.();
+            if (data) setUserData(data);
+          } catch (e) {
+            console.warn('[ConnectWallet] Could not load user data after connect', e);
+          }
+          setConnecting(false);
+        },
+        onCancel: () => {
+          console.log('[ConnectWallet] User canceled connect');
+          setConnecting(false);
+        },
+      });
+    } catch (err) {
+      setConnecting(false);
+      console.error('[ConnectWallet] Failed to open connect modal', err);
+      if (typeof window !== 'undefined') {
+        alert('Failed to open connect modal. See console for details.');
+      }
+    }
   };
 
   const handleDisconnect = () => {
@@ -69,5 +92,14 @@ export default function ConnectWallet() {
   }
 
   // User is not signed in
-  return <button onClick={handleConnect}>Connect Wallet</button>;
+  return (
+    <button
+      type="button"
+      onClick={handleConnect}
+      disabled={connecting}
+      className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {connecting ? 'Connecting…' : 'Connect Wallet'}
+    </button>
+  );
 }
