@@ -19,6 +19,11 @@ export default function Dashboard({ userSession }: DashboardProps) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -168,7 +173,7 @@ export default function Dashboard({ userSession }: DashboardProps) {
       setLoading(false);
       setError('Please connect your wallet to view dashboard');
     }
-  }, [userSession]);
+  }, [userSession, refreshKey]);
 
   if (loading) {
     return (
@@ -192,9 +197,18 @@ export default function Dashboard({ userSession }: DashboardProps) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-3xl sm:text-4xl xl:text-5xl font-bold mb-8 sm:mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-        Your Aura Finance Dashboard
-      </h2>
+      <div className="flex items-center justify-between mb-8 sm:mb-12">
+        <h2 className="text-3xl sm:text-4xl xl:text-5xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+          Your Aura Finance Dashboard
+        </h2>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="ml-4 cursor-pointer rounded-lg bg-purple-600 px-4 py-2 text-white text-sm font-semibold shadow hover:bg-purple-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+        >
+          {loading ? '⟳' : '↻'} Refresh
+        </button>
+      </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 xl:gap-10 w-full">
         {/* aBTC in Wallet Card */}
@@ -205,7 +219,7 @@ export default function Dashboard({ userSession }: DashboardProps) {
             </h3>
             <div className="flex flex-col space-y-2">
               <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-blue-600 dark:text-blue-400 tabular-nums break-all">
-                {data.abtcBalance.toFixed(8)}
+                {data.abtcBalance.toFixed(3)}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
             </div>
@@ -220,7 +234,7 @@ export default function Dashboard({ userSession }: DashboardProps) {
             </h3>
             <div className="flex flex-col space-y-2">
               <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-green-600 dark:text-green-400 tabular-nums break-all">
-                {data.stxDeposited.toFixed(6)}
+                {data.stxDeposited.toFixed(3)}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">STX</p>
             </div>
@@ -235,7 +249,7 @@ export default function Dashboard({ userSession }: DashboardProps) {
             </h3>
             <div className="flex flex-col space-y-2">
               <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-red-600 dark:text-red-400 tabular-nums break-all">
-                {data.abtcDebt.toFixed(8)}
+                {data.abtcDebt.toFixed(3)}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
             </div>
