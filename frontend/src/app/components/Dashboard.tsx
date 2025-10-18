@@ -44,10 +44,10 @@ export default function Dashboard({ userSession }: DashboardProps) {
         const network = STACKS_TESTNET;
         const senderAddress = userAddress;
 
-        // Contract addresses (V2 - Updated)
+        // Contract addresses (V3 - Fixed as-contract issue)
         const vaultContract = {
           contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-          contractName: 'auravault-v2',
+          contractName: 'auravault-v3',
         };
 
         const abtcTokenContract = {

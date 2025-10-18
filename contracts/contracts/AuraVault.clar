@@ -54,6 +54,8 @@
 
     (let
       (
+        ;; Store the caller's address before we use as-contract
+        (caller tx-sender)
         ;; Get the user's total STX deposit (which has 6 decimals).
         (stx-balance (get-balance tx-sender))
         ;; Get the user's current aBTC debt.
@@ -82,10 +84,11 @@
           (asserts! (<= new-total-debt max-borrowable-aBTC) (err ERR-INSUFFICIENT-DEPOSIT))
 
           ;; 4. Mint the new aBTC tokens to the user by calling our token contract.
-          (try! (contract-call? aBTC-contract mint amount-to-mint tx-sender))
+          ;; Use as-contract so the contract itself is the tx-sender for the mint call
+          (try! (as-contract (contract-call? aBTC-contract mint amount-to-mint caller)))
 
           ;; 5. Update the user's debt balance in our map.
-          (map-set aBTC-debt tx-sender new-total-debt)
+          (map-set aBTC-debt caller new-total-debt)
 
           (ok true)
         )

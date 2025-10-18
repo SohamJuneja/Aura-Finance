@@ -17,8 +17,8 @@ export default function TransferOwnership() {
     try {
       setLoading(true);
       
-      // The vault contract address (V2)
-      const vaultAddress = 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J.auravault-v2';
+      // The vault contract address (V3 - Final version with as-contract fix)
+      const vaultAddress = 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J.auravault-v3';
 
       await openContractCall({
         network: STACKS_TESTNET,
