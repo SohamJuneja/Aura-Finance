@@ -2,8 +2,8 @@
 
 import { AppConfig, UserSession } from '@stacks/connect';
 import { useState, useEffect } from 'react';
-import ConnectWallet from '../components/ConnectWallet';
-import Dashboard from '../components/Dashboard'; // Import the new component
+import ConnectWallet from './components/ConnectWallet';
+import Dashboard from './components/Dashboard'; // Import the new component
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });

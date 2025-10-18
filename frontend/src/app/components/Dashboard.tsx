@@ -165,53 +165,53 @@ export default function Dashboard({ userSession }: DashboardProps) {
   }
 
   return (
-    <div className="w-full">
-      <h2 className="text-4xl font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl sm:text-4xl xl:text-5xl font-bold mb-8 sm:mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
         Your Aura Finance Dashboard
       </h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 xl:gap-10 w-full">
         {/* aBTC in Wallet Card */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6 sm:p-8 xl:p-10 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+          <div className="flex flex-col space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               aBTC in Wallet
             </h3>
             <div className="flex flex-col space-y-2">
-              <p className="text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400 tabular-nums break-all">
+              <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-blue-600 dark:text-blue-400 tabular-nums break-all">
                 {data.abtcBalance.toFixed(8)}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
             </div>
           </div>
         </div>
 
         {/* STX Deposited Card */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6 sm:p-8 xl:p-10 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+          <div className="flex flex-col space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               STX Deposited
             </h3>
             <div className="flex flex-col space-y-2">
-              <p className="text-4xl lg:text-5xl font-bold text-green-600 dark:text-green-400 tabular-nums break-all">
+              <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-green-600 dark:text-green-400 tabular-nums break-all">
                 {data.stxDeposited.toFixed(6)}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">STX</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">STX</p>
             </div>
           </div>
         </div>
 
         {/* aBTC Debt Card */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300 sm:col-span-2 lg:col-span-1">
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6 sm:p-8 xl:p-10 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+          <div className="flex flex-col space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               aBTC Debt
             </h3>
             <div className="flex flex-col space-y-2">
-              <p className="text-4xl lg:text-5xl font-bold text-red-600 dark:text-red-400 tabular-nums break-all">
+              <p className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-red-600 dark:text-red-400 tabular-nums break-all">
                 {data.abtcDebt.toFixed(8)}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
             </div>
           </div>
         </div>
