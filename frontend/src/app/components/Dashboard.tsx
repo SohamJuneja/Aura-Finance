@@ -96,26 +96,52 @@ export default function Dashboard({ userSession }: DashboardProps) {
           abtcBalanceResult,
         });
 
-        // Convert Clarity values to JS - handle Response wrappers
-        const extractValue = (result: ClarityValue | null): bigint => {
-          if (!result) return BigInt(0);
-          const val = cvToValue(result);
-          console.log('[Dashboard] Extracted value:', val);
-          // Handle { type: 'ok', value: <actual_value> } or just value
-          if (val && typeof val === 'object' && 'value' in val) {
-            return BigInt((val as { value: bigint | number }).value);
+        // Convert Clarity values to JS - handle both raw uints and Response wrappers
+        const extractValue = (result: ClarityValue | null, name: string): bigint => {
+          if (!result) {
+            console.log(`[Dashboard] ${name}: result is null, returning 0`);
+            return BigInt(0);
           }
-          return BigInt(val || 0);
+          
+          const val = cvToValue(result);
+          console.log(`[Dashboard] ${name} extracted value:`, val, 'type:', typeof val);
+          
+          // Case 1: Response wrapper like { type: 'ok', value: <bigint> }
+          if (val && typeof val === 'object' && 'value' in val) {
+            const innerValue = (val as { value: bigint | number }).value;
+            console.log(`[Dashboard] ${name} unwrapped from response:`, innerValue);
+            return BigInt(innerValue);
+          }
+          
+          // Case 2: Direct bigint or number value
+          if (typeof val === 'bigint') {
+            console.log(`[Dashboard] ${name} direct bigint:`, val);
+            return val;
+          }
+          
+          if (typeof val === 'number') {
+            console.log(`[Dashboard] ${name} direct number:`, val);
+            return BigInt(val);
+          }
+          
+          // Case 3: String representation of number
+          if (typeof val === 'string' && /^\d+$/.test(val)) {
+            console.log(`[Dashboard] ${name} string number:`, val);
+            return BigInt(val);
+          }
+          
+          console.warn(`[Dashboard] ${name} unexpected value type, defaulting to 0:`, val);
+          return BigInt(0);
         };
 
-        const stxDepositedRaw = extractValue(stxDepositedResult);
-        const abtcDebtRaw = extractValue(abtcDebtResult);
-        const abtcBalanceRaw = extractValue(abtcBalanceResult);
+        const stxDepositedRaw = extractValue(stxDepositedResult, 'STX Deposited');
+        const abtcDebtRaw = extractValue(abtcDebtResult, 'aBTC Debt');
+        const abtcBalanceRaw = extractValue(abtcBalanceResult, 'aBTC Balance');
 
         console.log('[Dashboard] Converted values:', {
-          stxDepositedRaw,
-          abtcDebtRaw,
-          abtcBalanceRaw,
+          stxDepositedRaw: stxDepositedRaw.toString(),
+          abtcDebtRaw: abtcDebtRaw.toString(),
+          abtcBalanceRaw: abtcBalanceRaw.toString(),
         });
 
         // Convert from micro-units to human-readable (STX: 6 decimals, aBTC: 8 decimals)
