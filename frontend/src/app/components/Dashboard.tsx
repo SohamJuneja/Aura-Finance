@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchCallReadOnlyFunction, cvToValue, principalCV } from '@stacks/transactions';
+import { fetchCallReadOnlyFunction, cvToValue, principalCV, type ClarityValue } from '@stacks/transactions';
 import { STACKS_TESTNET } from '@stacks/network';
 import type { UserSession } from '@stacks/connect';
 
@@ -34,6 +34,8 @@ export default function Dashboard({ userSession }: DashboardProps) {
           throw new Error('No testnet address found. Please connect your wallet.');
         }
 
+        console.log('[Dashboard] Fetching data for address:', userAddress);
+
         const network = STACKS_TESTNET;
         const senderAddress = userAddress;
 
@@ -58,6 +60,9 @@ export default function Dashboard({ userSession }: DashboardProps) {
             functionName: 'get-balance',
             functionArgs: [principalCV(userAddress)],
             senderAddress,
+          }).catch(err => {
+            console.error('[Dashboard] Error fetching STX deposits:', err);
+            return null;
           }),
           // 2. Get aBTC debt from AuraVault
           fetchCallReadOnlyFunction({
@@ -67,6 +72,9 @@ export default function Dashboard({ userSession }: DashboardProps) {
             functionName: 'get-debt',
             functionArgs: [principalCV(userAddress)],
             senderAddress,
+          }).catch(err => {
+            console.error('[Dashboard] Error fetching aBTC debt:', err);
+            return null;
           }),
           // 3. Get aBTC balance from aBTC-token contract
           fetchCallReadOnlyFunction({
@@ -76,13 +84,39 @@ export default function Dashboard({ userSession }: DashboardProps) {
             functionName: 'get-balance',
             functionArgs: [principalCV(userAddress)],
             senderAddress,
+          }).catch(err => {
+            console.error('[Dashboard] Error fetching aBTC balance:', err);
+            return null;
           }),
         ]);
 
-        // Convert Clarity values to JS numbers
-        const stxDepositedRaw = cvToValue(stxDepositedResult);
-        const abtcDebtRaw = cvToValue(abtcDebtResult);
-        const abtcBalanceRaw = cvToValue(abtcBalanceResult);
+        console.log('[Dashboard] Raw results:', {
+          stxDepositedResult,
+          abtcDebtResult,
+          abtcBalanceResult,
+        });
+
+        // Convert Clarity values to JS - handle Response wrappers
+        const extractValue = (result: ClarityValue | null): bigint => {
+          if (!result) return BigInt(0);
+          const val = cvToValue(result);
+          console.log('[Dashboard] Extracted value:', val);
+          // Handle { type: 'ok', value: <actual_value> } or just value
+          if (val && typeof val === 'object' && 'value' in val) {
+            return BigInt((val as { value: bigint | number }).value);
+          }
+          return BigInt(val || 0);
+        };
+
+        const stxDepositedRaw = extractValue(stxDepositedResult);
+        const abtcDebtRaw = extractValue(abtcDebtResult);
+        const abtcBalanceRaw = extractValue(abtcBalanceResult);
+
+        console.log('[Dashboard] Converted values:', {
+          stxDepositedRaw,
+          abtcDebtRaw,
+          abtcBalanceRaw,
+        });
 
         // Convert from micro-units to human-readable (STX: 6 decimals, aBTC: 8 decimals)
         const stxDeposited = Number(stxDepositedRaw) / 1_000_000; // 6 decimals
@@ -90,9 +124,9 @@ export default function Dashboard({ userSession }: DashboardProps) {
         const abtcBalance = Number(abtcBalanceRaw) / 100_000_000; // 8 decimals
 
         setData({
-          abtcBalance,
-          stxDeposited,
-          abtcDebt,
+          abtcBalance: isNaN(abtcBalance) ? 0 : abtcBalance,
+          stxDeposited: isNaN(stxDeposited) ? 0 : stxDeposited,
+          abtcDebt: isNaN(abtcDebt) ? 0 : abtcDebt,
         });
       } catch (err) {
         console.error('[Dashboard] Error fetching data:', err);
@@ -112,16 +146,16 @@ export default function Dashboard({ userSession }: DashboardProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-lg text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+      <div className="w-full flex items-center justify-center py-16">
+        <p className="text-xl text-gray-600 dark:text-gray-400">Loading dashboard...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-lg text-red-600 dark:text-red-400">{error}</p>
+      <div className="w-full flex items-center justify-center py-16">
+        <p className="text-xl text-red-600 dark:text-red-400">{error}</p>
       </div>
     );
   }
@@ -131,41 +165,55 @@ export default function Dashboard({ userSession }: DashboardProps) {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-8 text-center">Your Aura Finance Dashboard</h2>
+    <div className="w-full">
+      <h2 className="text-4xl font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+        Your Aura Finance Dashboard
+      </h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
         {/* aBTC in Wallet Card */}
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-zinc-700">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            aBTC in Wallet
-          </h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {data.abtcBalance.toFixed(4)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">aBTC</p>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+          <div className="flex flex-col space-y-4">
+            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              aBTC in Wallet
+            </h3>
+            <div className="flex flex-col space-y-2">
+              <p className="text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400 tabular-nums break-all">
+                {data.abtcBalance.toFixed(8)}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
+            </div>
+          </div>
         </div>
 
         {/* STX Deposited Card */}
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-zinc-700">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            STX Deposited
-          </h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {data.stxDeposited.toFixed(4)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">STX</p>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+          <div className="flex flex-col space-y-4">
+            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              STX Deposited
+            </h3>
+            <div className="flex flex-col space-y-2">
+              <p className="text-4xl lg:text-5xl font-bold text-green-600 dark:text-green-400 tabular-nums break-all">
+                {data.stxDeposited.toFixed(6)}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">STX</p>
+            </div>
+          </div>
         </div>
 
         {/* aBTC Debt Card */}
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-zinc-700">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            aBTC Debt
-          </h3>
-          <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-            {data.abtcDebt.toFixed(4)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">aBTC</p>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border-2 border-gray-100 dark:border-zinc-800 hover:shadow-2xl hover:scale-105 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+          <div className="flex flex-col space-y-4">
+            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              aBTC Debt
+            </h3>
+            <div className="flex flex-col space-y-2">
+              <p className="text-4xl lg:text-5xl font-bold text-red-600 dark:text-red-400 tabular-nums break-all">
+                {data.abtcDebt.toFixed(8)}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">aBTC</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
