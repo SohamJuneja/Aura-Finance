@@ -1,0 +1,18 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://stacks-node-api.testnet.stacks.co"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: hello-world
+            expected-sender: ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J
+            cost: 1910
+            path: "contracts\\hello-world.clar"
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.05"

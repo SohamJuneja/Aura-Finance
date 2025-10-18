@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aura Finance - Manual Transaction Sender</title>
+    <style>
+        body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding-top: 50px; }
+        button { font-size: 20px; padding: 15px 30px; cursor: pointer; border-radius: 8px; border: none; }
+        #status { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h1>Aura Finance Test Tool</h1>
+    <p>Use this tool to interact with our smart contracts directly.</p>
+    <button id="depositBtn">1. Deposit 10 STX</button>
+    <div id="status">Status: Waiting for action...</div>
+
+    <script src="https://unpkg.com/@stacks/connect@latest/dist/umd/index.umd.js"></script>
+    <script>
+        const depositBtn = document.getElementById('depositBtn');
+        const statusDiv = document.getElementById('status');
+
+        // CORRECTED: Using lowercase 'stacksConnect'
+        const { openContractCall } = stacksConnect; 
+        const { StacksTestnet } = stacksConnect.network;
+        const { uint } = stacksConnect.transactions;
+
+        // --- CONTRACT DETAILS ---
+        const contractAddress = 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J';
+        const contractName = 'petite-orange-grasshopper';
+        const functionName = 'deposit';
+
+        depositBtn.addEventListener('click', async () => {
+            statusDiv.textContent = 'Opening wallet...';
+
+            const options = {
+                network: new StacksTestnet(),
+                contractAddress,
+                contractName,
+                functionName,
+                functionArgs: [
+                    uint(10000000) // This is 10 STX with 6 decimals
+                ],
+                appDetails: {
+                    name: 'Aura Finance Test Tool',
+                    icon: window.location.origin + '/favicon.ico',
+                },
+                onFinish: (data) => {
+                    statusDiv.innerHTML = `✅ Transaction sent! <br> TXID: ${data.txId}`;
+                    console.log('Transaction Finished:', data);
+                },
+                onCancel: () => {
+                    statusDiv.textContent = '❌ Transaction Canceled.';
+                    console.log('Transaction Canceled');
+                },
+            };
+
+            await openContractCall(options);
+        });
+    </script>
+</body>
+</html>
