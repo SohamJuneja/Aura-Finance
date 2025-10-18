@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { openContractCall } from '@stacks/connect';
-import { uintCV, PostConditionMode } from '@stacks/transactions';
+import { uintCV, PostConditionMode, type ClarityValue } from '@stacks/transactions';
 import { STACKS_TESTNET } from '@stacks/network';
 import type { UserSession } from '@stacks/connect';
 
@@ -14,27 +14,83 @@ interface MintABTCProps {
 export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [maxBorrowable, setMaxBorrowable] = useState<number | null>(null);
+  const [stxDeposit, setStxDeposit] = useState<number>(0);
+  const [currentDebt, setCurrentDebt] = useState<number>(0);
+  const [fetchingLimits, setFetchingLimits] = useState(true);
 
-  // Calculate max borrowable amount based on 50 STX deposit
-  // This is a simple calculation - in production, fetch actual deposit from contract
+  // Fetch actual STX deposit and current debt from blockchain
+  useEffect(() => {
+    async function fetchLimits() {
+      try {
+        if (!userSession.isUserSignedIn()) return;
+        
+        const userData = userSession.loadUserData();
+        const userAddress = userData?.profile?.stxAddress?.testnet;
+        if (!userAddress) return;
+
+        const network = STACKS_TESTNET;
+        const vaultContract = {
+          contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
+          contractName: 'auravault-v2',
+        };
+
+        // Fetch STX deposit and current debt
+        const { fetchCallReadOnlyFunction, principalCV, cvToValue } = await import('@stacks/transactions');
+        
+        const [depositResult, debtResult] = await Promise.all([
+          fetchCallReadOnlyFunction({
+            network,
+            contractAddress: vaultContract.contractAddress,
+            contractName: vaultContract.contractName,
+            functionName: 'get-balance',
+            functionArgs: [principalCV(userAddress)],
+            senderAddress: userAddress,
+          }),
+          fetchCallReadOnlyFunction({
+            network,
+            contractAddress: vaultContract.contractAddress,
+            contractName: vaultContract.contractName,
+            functionName: 'get-debt',
+            functionArgs: [principalCV(userAddress)],
+            senderAddress: userAddress,
+          }),
+        ]);
+
+        const depositMicroSTX = Number(cvToValue(depositResult as ClarityValue));
+        const debtSatoshis = Number(cvToValue(debtResult as ClarityValue));
+
+        setStxDeposit(depositMicroSTX / 1_000_000);
+        setCurrentDebt(debtSatoshis / 100_000_000);
+        setFetchingLimits(false);
+      } catch (err) {
+        console.error('[MintABTC] Error fetching limits:', err);
+        setFetchingLimits(false);
+      }
+    }
+
+    fetchLimits();
+  }, [userSession]);
+
+  // Calculate max borrowable based on actual deposit
   const calculateMaxBorrow = () => {
-    // Example: 50 STX × $2 = $100 value
-    // 50% LTV = $50 max borrow
-    // At $100,000/BTC = 0.0005 BTC
-    // This is a rough estimate - actual value depends on real deposits
-    const stxDeposit = 50; // You can fetch actual value from contract
-    const stxPrice = 2;
-    const ltv = 0.5;
-    const btcPrice = 100000;
+    // STX deposit value in USD (assuming $2 per STX from contract)
+    const stxValueUSD = stxDeposit * 2;
     
-    const maxBorrow = (stxDeposit * stxPrice * ltv) / btcPrice;
-    setMaxBorrowable(maxBorrow);
+    // 50% LTV = can borrow 50% of collateral value
+    const maxBorrowValueUSD = stxValueUSD * 0.5;
+    
+    // Convert to BTC (assuming $100,000 per BTC as a rough estimate)
+    // In production, you'd fetch real BTC price
+    const btcPrice = 100000;
+    const maxBorrowBTC = maxBorrowValueUSD / btcPrice;
+    
+    // Subtract current debt
+    const availableToBorrow = maxBorrowBTC - currentDebt;
+    
+    return Math.max(0, availableToBorrow);
   };
 
-  useEffect(() => {
-    calculateMaxBorrow();
-  }, []);
+  const maxBorrowable = calculateMaxBorrow();
 
   const handleMint = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -56,7 +112,7 @@ export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
       await openContractCall({
         network: STACKS_TESTNET,
         contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-        contractName: 'petite-orange-grasshopper',
+        contractName: 'auravault-v2',
         functionName: 'mint',
         functionArgs: [uintCV(satoshis)],
         postConditionMode: PostConditionMode.Allow,
@@ -84,12 +140,29 @@ export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
       <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Mint aBTC</h3>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
         Mint aBTC against your deposited STX. Maximum: 50% LTV (Loan-to-Value).
-        {maxBorrowable && (
-          <span className="block mt-2 text-green-600 dark:text-green-400 font-semibold">
-            Estimated max: ~{maxBorrowable.toFixed(4)} aBTC
-          </span>
-        )}
       </p>
+      
+      {fetchingLimits ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Loading limits...</p>
+      ) : (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">
+            <strong>Your Collateral:</strong> {stxDeposit.toFixed(2)} STX (≈ ${(stxDeposit * 2).toFixed(2)})
+          </p>
+          <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">
+            <strong>Current Debt:</strong> {currentDebt.toFixed(8)} aBTC
+          </p>
+          <p className="text-xs font-bold text-green-600 dark:text-green-400">
+            <strong>Max Available to Mint:</strong> {maxBorrowable.toFixed(8)} aBTC
+          </p>
+          {maxBorrowable <= 0 && (
+            <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+              ⚠️ You&apos;ve reached your borrowing limit. Deposit more STX to mint more aBTC.
+            </p>
+          )}
+        </div>
+      )}
+      
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

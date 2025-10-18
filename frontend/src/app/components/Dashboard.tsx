@@ -44,15 +44,15 @@ export default function Dashboard({ userSession }: DashboardProps) {
         const network = STACKS_TESTNET;
         const senderAddress = userAddress;
 
-        // Contract addresses
+        // Contract addresses (V2 - Updated)
         const vaultContract = {
           contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-          contractName: 'petite-orange-grasshopper',
+          contractName: 'auravault-v2',
         };
 
         const abtcTokenContract = {
           contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-          contractName: 'rotten-lavender-ermine',
+          contractName: 'aBTC-token-v2',
         };
 
         // Fetch all three values in parallel

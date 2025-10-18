@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import DepositSTX from './components/DepositSTX';
 import MintABTC from './components/MintABTC';
 import TransactionTracker from './components/TransactionTracker';
+import TransferOwnership from './components/TransferOwnership';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -56,6 +57,12 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-blue-600 dark:from-green-400 dark:to-blue-400">
                 Interact with Aura Finance
               </h2>
+              
+              {/* One-time ownership transfer */}
+              <div className="max-w-2xl mx-auto mb-6">
+                <TransferOwnership />
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
                 <DepositSTX 
                   userSession={userSession} 

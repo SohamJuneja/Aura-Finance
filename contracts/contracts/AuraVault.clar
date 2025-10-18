@@ -10,7 +10,7 @@
 (define-constant STX-USD-PRICE-ORACLE u200000000) ;; Represents $2.00 with 8 decimals
 
 ;; This is the official address of our aBTC token contract.
-(define-constant aBTC-contract 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J.rotten-lavender-ermine)
+(define-constant aBTC-contract 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J.aBTC-token-v2)
 
 
 ;; --- Data Storage ---

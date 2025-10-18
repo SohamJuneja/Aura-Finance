@@ -31,7 +31,13 @@ export default function TransactionTracker({ txId, onConfirmed }: TransactionTra
           setStatus('confirmed');
           onConfirmed();
         } else if (data.tx_status === 'abort_by_response' || data.tx_status === 'abort_by_post_condition') {
+          console.error('[TransactionTracker] Transaction failed:', data);
           setStatus('failed');
+          
+          // Try to extract the error message
+          if (data.tx_result?.repr) {
+            console.error('[TransactionTracker] Error details:', data.tx_result.repr);
+          }
         }
       } catch (err) {
         console.error('[TransactionTracker] Error checking tx:', err);
@@ -66,9 +72,28 @@ export default function TransactionTracker({ txId, onConfirmed }: TransactionTra
 
   if (status === 'failed') {
     return (
-      <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-2xl">
+      <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-2xl max-w-md">
         <p className="font-bold">❌ Transaction Failed</p>
-        <p className="text-sm">The transaction was rejected by the blockchain</p>
+        <p className="text-sm mt-2">The transaction was rejected by the blockchain.</p>
+        <p className="text-xs mt-2 opacity-90">
+          <strong>Common reasons:</strong>
+        </p>
+        <ul className="text-xs mt-1 ml-4 list-disc opacity-90">
+          <li>Trying to mint more than 50% LTV allows</li>
+          <li>Insufficient STX deposited</li>
+          <li>Contract error</li>
+        </ul>
+        <p className="text-xs mt-3 opacity-75">
+          View transaction:{' '}
+          <a 
+            href={`https://explorer.hiro.so/txid/${txId}?chain=testnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-red-200"
+          >
+            Explorer
+          </a>
+        </p>
       </div>
     );
   }

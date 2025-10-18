@@ -44,6 +44,15 @@
 
 ;; --- Admin Functions ---
 
+;; Transfer ownership to another principal (e.g., the vault contract)
+(define-public (set-contract-owner (new-owner principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) (err ERR-UNAUTHORIZED))
+    (var-set contract-owner new-owner)
+    (ok true)
+  )
+)
+
 ;; The contract owner (initially you, but later our main vault contract)
 ;; is the only one who can mint new aBTC tokens.
 (define-public (mint (amount uint) (recipient principal))
