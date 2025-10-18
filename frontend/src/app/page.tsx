@@ -1,6 +1,20 @@
+'use client';
+
 import ConnectWallet from './components/ConnectWallet';
+import Dashboard from './components/Dashboard';
+import { AppConfig, UserSession } from '@stacks/connect';
+import { useState, useEffect } from 'react';
+
+const appConfig = new AppConfig(['store_write', 'publish_data']);
+const userSession = new UserSession({ appConfig });
 
 export default function Home() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    setIsSignedIn(userSession.isUserSignedIn());
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -17,7 +31,8 @@ export default function Home() {
       </div>
 
       <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        {/* We will add dashboard components here later */}
+        {/* Dashboard shown when user is connected */}
+        {isSignedIn && <Dashboard userSession={userSession} />}
       </div>
     </main>
   );
