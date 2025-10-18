@@ -74,14 +74,8 @@ export default function ConnectWallet() {
           icon: `${window.location.origin}/favicon.ico`,
         },
         onFinish: () => {
-          console.log('[ConnectWallet] Connect finished');
-          try {
-            const data = userSession.loadUserData?.();
-            if (data) setUserData(data);
-          } catch (e) {
-            console.warn('[ConnectWallet] Could not load user data after connect', e);
-          }
-          setConnecting(false);
+          console.log('[ConnectWallet] Connect finished, reloading page...');
+          window.location.reload(); // Force full page refresh to sync state
         },
         onCancel: () => {
           console.log('[ConnectWallet] User canceled connect');
