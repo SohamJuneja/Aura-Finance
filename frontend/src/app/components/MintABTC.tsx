@@ -31,7 +31,7 @@ export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
         const network = STACKS_TESTNET;
         const vaultContract = {
           contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-          contractName: 'auravault-v3',
+          contractName: 'driving-copper-trout',
         };
 
         // Fetch STX deposit and current debt
@@ -112,7 +112,7 @@ export default function MintABTC({ userSession, onSuccess }: MintABTCProps) {
       await openContractCall({
         network: STACKS_TESTNET,
         contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-        contractName: 'auravault-v3',
+        contractName: 'driving-copper-trout',
         functionName: 'mint',
         functionArgs: [uintCV(satoshis)],
         postConditionMode: PostConditionMode.Allow,

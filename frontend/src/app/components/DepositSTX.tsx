@@ -30,7 +30,7 @@ export default function DepositSTX({ userSession, onSuccess }: DepositSTXProps) 
       await openContractCall({
         network: STACKS_TESTNET,
         contractAddress: 'ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J',
-        contractName: 'auravault-v3',
+        contractName: 'driving-copper-trout',
         functionName: 'deposit',
         functionArgs: [uintCV(microSTX)],
         postConditionMode: PostConditionMode.Allow,

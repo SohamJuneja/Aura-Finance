@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: hello-world
+            contract-name: auravault-v4
             expected-sender: ST2QAEK3CTB4XNAV6R9GXXM162Z0ZWWD63PT8B20J
-            cost: 1910
-            path: "contracts\\hello-world.clar"
+            cost: 5000
+            path: "contracts\\AuraVault.clar"
             anchor-block-only: true
-            clarity-version: 1
+            clarity-version: 2
       epoch: "2.05"
