@@ -3,7 +3,9 @@
 import { AppConfig, UserSession } from '@stacks/connect';
 import { useState, useEffect } from 'react';
 import ConnectWallet from './components/ConnectWallet';
-import Dashboard from './components/Dashboard'; // Import the new component
+import Dashboard from './components/Dashboard';
+import DepositSTX from './components/DepositSTX';
+import MintABTC from './components/MintABTC';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -29,10 +31,23 @@ export default function Home() {
       </div>
 
       {/* Main Content Section */}
-      <div className="flex-grow flex flex-col items-center justify-center text-center w-full max-w-5xl mt-16">
+      <div className="flex-grow flex flex-col items-center justify-center text-center w-full max-w-7xl mt-16 space-y-12">
         {isConnected ? (
-          // If connected, show the dashboard
-          <Dashboard userSession={userSession} />
+          <>
+            {/* Dashboard showing current balances */}
+            <Dashboard userSession={userSession} />
+            
+            {/* Transaction Actions */}
+            <div className="w-full">
+              <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-blue-600 dark:from-green-400 dark:to-blue-400">
+                Interact with Aura Finance
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+                <DepositSTX userSession={userSession} />
+                <MintABTC userSession={userSession} />
+              </div>
+            </div>
+          </>
         ) : (
           // If not connected, show the welcome message
           <div>
