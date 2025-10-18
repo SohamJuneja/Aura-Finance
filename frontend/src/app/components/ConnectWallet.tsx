@@ -42,7 +42,28 @@ export default function ConnectWallet() {
         onFinish?: () => void;
         onCancel?: (err?: unknown) => void;
       }, provider?: unknown) => Promise<unknown> | void;
-      const fn = (mod as { showConnect?: ShowConnect }).showConnect;
+      const getFn = (m: Record<string, unknown>): ShowConnect | undefined => {
+        const candidates = [
+          'showConnect',
+          'authenticate',
+          'connect',
+          'showBlockstackConnect',
+        ] as const;
+        for (const key of candidates) {
+          const v = m[key];
+          if (typeof v === 'function') return v as ShowConnect;
+        }
+        // Some bundlers put named exports under default
+        const def: unknown = (m as { default?: unknown }).default;
+        if (def && typeof def === 'object') {
+          return getFn(def as Record<string, unknown>);
+        }
+        return undefined;
+      };
+      const fn = getFn(mod as unknown as Record<string, unknown>);
+      if (!fn) {
+        console.error('[ConnectWallet] Available keys on @stacks/connect:', Object.keys(mod as Record<string, unknown>));
+      }
       if (typeof fn !== 'function') {
         throw new Error('showConnect export not found or not a function');
       }
