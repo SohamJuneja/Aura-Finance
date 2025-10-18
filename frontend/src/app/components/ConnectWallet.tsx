@@ -1,6 +1,6 @@
 'use client'; // This is required by Next.js to make the component interactive
 
-import { AppConfig, UserSession, showConnect } from '@stacks/connect';
+import { AppConfig, UserSession } from '@stacks/connect';
 
 // Minimal shape used from Stacks user data to avoid external type dependency
 type UserData = {
@@ -31,11 +31,22 @@ export default function ConnectWallet() {
     }
   }, []);
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     try {
       setConnecting(true);
       console.log('[ConnectWallet] Opening Stacks connect modal');
-      showConnect({
+      const mod = await import('@stacks/connect');
+      type ShowConnect = (opts: {
+        userSession: unknown;
+        appDetails?: { name: string; icon?: string };
+        onFinish?: () => void;
+        onCancel?: (err?: unknown) => void;
+      }, provider?: unknown) => Promise<unknown> | void;
+      const fn = (mod as { showConnect?: ShowConnect }).showConnect;
+      if (typeof fn !== 'function') {
+        throw new Error('showConnect export not found or not a function');
+      }
+      await fn({
         userSession,
         appDetails: {
           name: 'Aura Finance',
